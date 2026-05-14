@@ -519,6 +519,156 @@
     text-shadow: 0 0 6px rgba(255,176,0,0.3);
   }
 
+  /* ── SCENARIO ACTIVE STATE ── */
+  .scenario-btn.active {
+    background: #091200;
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 16px rgba(0,255,65,0.22), inset 0 0 10px rgba(0,255,65,0.05);
+  }
+  .scenario-btn.active::before {
+    border-color: rgba(0,255,65,0.2);
+  }
+
+  /* ── 2050 ANOMALY READOUT ── */
+  .readout-anomaly {
+    margin-top: 12px;
+  }
+  .readout-anomaly::before {
+    content: 'PROJECTED 2050 ANOMALY';
+    background: #0E0E0E;
+  }
+  .readout-anomaly .readout-primary {
+    font-size: 2.6rem;
+    color: #FF7700;
+    text-shadow: 0 0 16px rgba(255,119,0,0.5), 0 0 32px rgba(255,119,0,0.2);
+  }
+  .readout-anomaly .readout-secondary {
+    font-size: 0.56rem;
+    letter-spacing: 0.2em;
+    color: #664400;
+    margin-top: 6px;
+    font-family: var(--font-mono);
+  }
+
+  /* ── DIVERGENCE DISPLAY ── */
+  .divergence-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .div-cell {
+    background: #060606;
+    border: 1px solid var(--border-amber);
+    padding: 8px 10px;
+    position: relative;
+  }
+  .div-cell-label {
+    font-size: 0.46rem;
+    letter-spacing: 0.18em;
+    color: #3A2800;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .div-cell-value {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--amber);
+    text-shadow: 0 0 8px rgba(255,176,0,0.3);
+  }
+
+  /* ── TYPEWRITER ── */
+  #typewriter-line {
+    color: var(--amber-dim);
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+  }
+  .typewriter-cursor {
+    color: var(--amber);
+    font-size: 0.7rem;
+    animation: cursor-blink 0.7s step-end infinite;
+    vertical-align: middle;
+    margin-left: 1px;
+  }
+  @keyframes cursor-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  /* ── CRT FLICKER ── */
+  @keyframes crt-flicker {
+    0%   { opacity: 1;    filter: brightness(1); }
+    6%   { opacity: 0.25; filter: brightness(2.5); }
+    8%   { opacity: 0.9;  filter: brightness(1); }
+    18%  { opacity: 0.5;  filter: brightness(1.8); }
+    20%  { opacity: 1;    filter: brightness(1); }
+    46%  { opacity: 0.85; filter: brightness(1); }
+    48%  { opacity: 0.05; filter: brightness(3); }
+    51%  { opacity: 1;    filter: brightness(1); }
+    100% { opacity: 1;    filter: brightness(1); }
+  }
+  .crt-recalculating {
+    animation: crt-flicker 0.44s ease-out forwards;
+  }
+
+  /* ── DANGER RING (high greenhouse) ── */
+  #svg-danger-ring {
+    opacity: 0;
+    transition: opacity 0.9s ease;
+    animation: danger-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes danger-pulse {
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(255,40,0,0.55)); }
+    50%       { filter: drop-shadow(0 0 16px rgba(255,40,0,1.0))
+                        drop-shadow(0 0 30px rgba(180,0,0,0.55)); }
+  }
+
+  /* ── SCENARIO TOOLTIPS ── */
+  .scenario-btn[data-tip] {
+    overflow: visible;
+  }
+  .scenario-btn[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 9px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 210px;
+    background: #08070A;
+    border: 1px solid var(--amber-faint);
+    color: var(--amber-dim);
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+    letter-spacing: 0.1em;
+    line-height: 1.55;
+    padding: 7px 10px;
+    text-transform: none;
+    text-align: left;
+    white-space: normal;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    z-index: 500;
+    box-shadow: 0 0 14px rgba(0,0,0,0.8);
+  }
+  .scenario-btn[data-tip]:hover::after {
+    opacity: 1;
+  }
+
+  /* ── PAGE FOOTER ── */
+  .page-footer {
+    background: #070707;
+    border-top: 1px solid var(--border-amber);
+    padding: 13px 28px;
+    text-align: center;
+    font-size: 0.56rem;
+    letter-spacing: 0.1em;
+    color: #3A2800;
+    font-style: italic;
+    line-height: 1.9;
+  }
+
 </style>
 </head>
 <body>
@@ -532,7 +682,8 @@
   <div class="header-title">THE MODELER'S DILEMMA</div>
   <div class="header-subtitle">
     SUBCOMMITTEE ON SCIENCE AND TECHNOLOGY<br>
-    ENERGY BALANCE MODELING DIVISION — 1979
+    ENERGY BALANCE MODELING DIVISION — 1979<br>
+    <span id="typewriter-line"></span><span class="typewriter-cursor">&#x2588;</span>
   </div>
 </div>
 
@@ -628,11 +779,15 @@
         </g>
 
         <!-- ATMOSPHERE RING (dashed band) -->
-        <circle cx="280" cy="310" r="195" fill="none"
+        <circle id="svg-atmos-1" cx="280" cy="310" r="195" fill="none"
           stroke="#00AA44" stroke-width="18" stroke-dasharray="6 4"
           opacity="0.22" class="atmos-ring"/>
-        <circle cx="280" cy="310" r="195" fill="none"
+        <circle id="svg-atmos-2" cx="280" cy="310" r="195" fill="none"
           stroke="#004422" stroke-width="22" opacity="0.35" class="atmos-ring"/>
+
+        <!-- HIGH SENSITIVITY WARNING RING -->
+        <circle id="svg-danger-ring" cx="280" cy="310" r="195" fill="none"
+          stroke="#FF2200" stroke-width="22" stroke-dasharray="5 5"/>
 
         <!-- EARTH BODY -->
         <circle cx="280" cy="310" r="158" fill="url(#earth-grad)"/>
@@ -661,12 +816,12 @@
 
         <!-- ══════════ SOLAR INPUT ARROW (thick, yellow, from top-left, pointing down) ══════════ -->
         <!-- Arrow shaft -->
-        <line x1="130" y1="30" x2="130" y2="165"
+        <line id="svg-solar-main" x1="130" y1="30" x2="130" y2="165"
           stroke="#FFD700" stroke-width="8"
           marker-end="url(#arrow-solar-head)"
           class="arrow-solar"/>
         <!-- Second parallel line for thick effect -->
-        <line x1="145" y1="30" x2="145" y2="165"
+        <line id="svg-solar-sec" x1="145" y1="30" x2="145" y2="165"
           stroke="#FFAA00" stroke-width="4" opacity="0.5"
           class="arrow-solar"/>
 
@@ -677,7 +832,7 @@
         <line x1="116" y1="78" x2="130" y2="78" stroke="#FFD700" stroke-width="1" opacity="0.6"/>
 
         <!-- ══════════ REFLECTED / ALBEDO ARROW (thinner, pale yellow, bouncing up-right) ══════════ -->
-        <line x1="205" y1="160" x2="175" y2="40"
+        <line id="svg-reflected" x1="205" y1="160" x2="175" y2="40"
           stroke="#FFEE88" stroke-width="4"
           marker-end="url(#arrow-reflected-head)"
           class="arrow-reflected"/>
@@ -688,7 +843,7 @@
         <text x="175" y="57" font-family="'Share Tech Mono', monospace" font-size="8" fill="#FFEE88" letter-spacing="1">(ALBEDO)</text>
 
         <!-- ══════════ ABSORBED ARROW (amber, pointing into surface) ══════════ -->
-        <line x1="240" y1="155" x2="258" y2="185"
+        <line id="svg-absorbed" x1="240" y1="155" x2="258" y2="185"
           stroke="#FFB000" stroke-width="5"
           marker-end="url(#arrow-absorbed-head)"
           class="arrow-absorbed"/>
@@ -715,7 +870,7 @@
 
         <!-- ══════════ GREENHOUSE TRAP (curved red arrow looping back down) ══════════ -->
         <!-- Curved loop path -->
-        <path d="M 420 195 Q 470 130 490 200 Q 500 260 450 285 Q 430 295 405 285"
+        <path id="svg-greenhouse" d="M 420 195 Q 470 130 490 200 Q 500 260 450 285 Q 430 295 405 285"
           fill="none" stroke="#FF4400" stroke-width="4"
           marker-end="url(#arrow-greenhouse-head)"
           class="arrow-greenhouse"/>
@@ -802,19 +957,19 @@
     <div class="diagram-footer">
       <div class="data-cell">
         <span class="data-cell-label">INSOLATION</span>
-        <span class="data-cell-value">1361 W/m²</span>
+        <span class="data-cell-value" id="dc-insolation">1361 W/m²</span>
       </div>
       <div class="data-cell">
         <span class="data-cell-label">ALBEDO</span>
-        <span class="data-cell-value">0.306</span>
+        <span class="data-cell-value" id="dc-albedo">0.300</span>
       </div>
       <div class="data-cell">
         <span class="data-cell-label">ΔT FORCING</span>
-        <span class="data-cell-value">+33 K</span>
+        <span class="data-cell-value" id="dc-forcing">+33 K</span>
       </div>
       <div class="data-cell">
         <span class="data-cell-label">EMISSIVITY</span>
-        <span class="data-cell-value">0.612</span>
+        <span class="data-cell-value" id="dc-emissivity">0.800</span>
       </div>
     </div>
 
@@ -843,15 +998,15 @@
       <div class="slider-row">
         <div class="slider-label">
           <span class="slider-name">SOLAR INPUT</span>
-          <span class="slider-value">1361</span>
+          <span class="slider-value" id="val-s">1361 W/m²</span>
         </div>
-        <input type="range" min="1300" max="1420" value="1361">
+        <input id="slider-s" type="range" min="1200" max="1500" step="1" value="1361">
         <div class="slider-ticks">
-          <span class="tick">1300</span>
-          <span class="tick">1340</span>
-          <span class="tick">1361</span>
-          <span class="tick">1390</span>
-          <span class="tick">1420</span>
+          <span class="tick">1200</span>
+          <span class="tick">1275</span>
+          <span class="tick">1350</span>
+          <span class="tick">1425</span>
+          <span class="tick">1500</span>
         </div>
       </div>
 
@@ -859,15 +1014,15 @@
       <div class="slider-row">
         <div class="slider-label">
           <span class="slider-name">ALBEDO (REFLECTIVITY)</span>
-          <span class="slider-value">0.306</span>
+          <span class="slider-value" id="val-a">0.30</span>
         </div>
-        <input type="range" min="0" max="100" value="31">
+        <input id="slider-a" type="range" min="0.20" max="0.50" step="0.01" value="0.30">
         <div class="slider-ticks">
-          <span class="tick">0.00</span>
-          <span class="tick">0.25</span>
+          <span class="tick">0.20</span>
+          <span class="tick">0.28</span>
+          <span class="tick">0.35</span>
+          <span class="tick">0.42</span>
           <span class="tick">0.50</span>
-          <span class="tick">0.75</span>
-          <span class="tick">1.00</span>
         </div>
       </div>
 
@@ -875,30 +1030,34 @@
       <div class="slider-row">
         <div class="slider-label">
           <span class="slider-name">GREENHOUSE STRENGTH</span>
-          <span class="slider-value">0.612</span>
+          <span class="slider-value" id="val-g">0.20</span>
         </div>
-        <input type="range" min="0" max="100" value="61">
+        <input id="slider-g" type="range" min="0.00" max="0.40" step="0.01" value="0.20">
         <div class="slider-ticks">
           <span class="tick">0.00</span>
-          <span class="tick">0.25</span>
-          <span class="tick">0.50</span>
-          <span class="tick">0.75</span>
-          <span class="tick">1.00</span>
+          <span class="tick">0.10</span>
+          <span class="tick">0.20</span>
+          <span class="tick">0.30</span>
+          <span class="tick">0.40</span>
         </div>
       </div>
     </div>
 
     <!-- EQUILIBRIUM TEMPERATURE READOUT -->
-    <div class="panel-section">
+    <div class="panel-section" id="readout-section">
       <div class="panel-section-title">OUTPUT MONITOR — THERMAL EQUILIBRIUM</div>
       <div class="readout-box">
-        <div class="readout-primary">288 K</div>
-        <div class="readout-secondary">15.0 °C</div>
+        <div class="readout-primary" id="readout-k">288.0 K</div>
+        <div class="readout-secondary" id="readout-c">14.9 °C</div>
         <div class="readout-footer">
           <span>STEFAN-BOLTZMANN MODEL</span>
-          <span>ITERATION: 001</span>
+          <span id="readout-iter">ITERATION: 001</span>
           <span>CONF: HIGH</span>
         </div>
+      </div>
+      <div class="readout-box readout-anomaly">
+        <div class="readout-primary" id="readout-anomaly">+1.8°C ABOVE BASELINE</div>
+        <div class="readout-secondary">LINEAR EXTRAPOLATION — ΔG = +0.05 OVER 70 YR</div>
       </div>
     </div>
 
@@ -906,19 +1065,19 @@
     <div class="panel-section">
       <div class="panel-section-title">SCENARIO SELECTION — PRESET CONFIGS</div>
       <div class="button-row">
-        <button class="scenario-btn">
+        <button id="btn-scenario-a" class="scenario-btn" data-tip="Hansen et al. (1979) — conservative greenhouse forcing">
           <span class="btn-indicator"></span>
           SCENARIO A<br>
-          <span style="font-size:0.5rem; color:#3A2800; letter-spacing:0.15em; display:block; margin-top:4px;">PRE-INDUSTRIAL<br>BASELINE</span>
+          <span style="font-size:0.5rem; color:#3A2800; letter-spacing:0.15em; display:block; margin-top:4px;">PRE-INDUSTRIAL<br>BASELINE — 288 K</span>
         </button>
-        <button class="scenario-btn">
+        <button id="btn-scenario-b" class="scenario-btn" data-tip="Charney Report (1979) — high climate sensitivity estimate">
           <span class="btn-indicator"></span>
           SCENARIO B<br>
-          <span style="font-size:0.5rem; color:#3A2800; letter-spacing:0.15em; display:block; margin-top:4px;">DOUBLED CO₂<br>PROJECTION</span>
+          <span style="font-size:0.5rem; color:#3A2800; letter-spacing:0.15em; display:block; margin-top:4px;">DOUBLED CO₂<br>PROJECTION — ~301 K</span>
         </button>
       </div>
       <div style="display:flex; gap:8px; margin-top:10px;">
-        <button class="scenario-btn" style="flex:1; padding:8px;">
+        <button id="btn-reset" class="scenario-btn" style="flex:1; padding:8px;">
           <span class="btn-indicator"></span>
           <span style="font-size:0.55rem;">RESET</span>
         </button>
@@ -931,16 +1090,28 @@
           <span style="font-size:0.55rem;">PRINT</span>
         </button>
       </div>
+      <!-- DIVERGENCE READOUT -->
+      <div class="divergence-grid">
+        <div class="div-cell">
+          <span class="div-cell-label">A vs B DIVERGENCE</span>
+          <span class="div-cell-value" id="div-ab">+12.6 K</span>
+        </div>
+        <div class="div-cell">
+          <span class="div-cell-label">CURRENT vs BASELINE</span>
+          <span class="div-cell-value" id="div-current">±0.0 K</span>
+        </div>
+      </div>
     </div>
 
     <!-- COMMITTEE BRIEFING -->
     <div class="panel-section" style="flex:1;">
       <div class="panel-section-title">TESTIMONY RECORD — OPEN SESSION</div>
       <div class="briefing-box">
-        <textarea class="briefing-textarea" rows="8"
-          placeholder="Dr. [Name], please walk the subcommittee through your model assumptions...">Dr. Hansen, please walk the subcommittee through your model assumptions. The committee wishes to understand the sensitivity parameters and their empirical basis before we proceed to the policy implications section.
+        <textarea id="briefing-text" class="briefing-textarea" rows="8"
+          placeholder="Dr. [Name], please walk the subcommittee through your model assumptions...">Model within historical range. Parameters consistent with observational record.
 
-[Record of proceedings — Room 2318, Rayburn House Office Building]</textarea>
+[Record of proceedings — Room 2318, Rayburn House Office Building]
+[Parameters: S=1361 W/m², A=0.30, G=0.20]</textarea>
         <div class="briefing-footer">
           <span>RECORD: OPEN</span>
           <span>CLASSIFICATION: UNCLASSIFIED</span>
@@ -952,6 +1123,296 @@
   </div><!-- /right-col -->
 
 </div><!-- /main -->
+
+<footer class="page-footer">
+  Note: This model uses a zero-dimensional energy balance formulation. Parameter ranges are simplified for demonstration.<br>
+  Two modelers. Two equally defensible assumptions. Two futures.
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var SIGMA = 5.67e-8;
+  var SCENARIO_A = { S: 1361, A: 0.30, G: 0.20 };
+  var SCENARIO_B = { S: 1361, A: 0.28, G: 0.32 };
+  var iterCount = 0;
+
+  // ── DOM REFS ──────────────────────────────────────────
+  var sliderS     = document.getElementById('slider-s');
+  var sliderA     = document.getElementById('slider-a');
+  var sliderG     = document.getElementById('slider-g');
+  var valS        = document.getElementById('val-s');
+  var valA        = document.getElementById('val-a');
+  var valG        = document.getElementById('val-g');
+
+  var readoutK    = document.getElementById('readout-k');
+  var readoutC    = document.getElementById('readout-c');
+  var readoutIter = document.getElementById('readout-iter');
+  var anomalyEl   = document.getElementById('readout-anomaly');
+
+  var divABEl     = document.getElementById('div-ab');
+  var divCurrEl   = document.getElementById('div-current');
+
+  var btnA        = document.getElementById('btn-scenario-a');
+  var btnB        = document.getElementById('btn-scenario-b');
+  var btnReset    = document.getElementById('btn-reset');
+
+  var briefingEl  = document.getElementById('briefing-text');
+
+  // SVG dynamic elements
+  var svgSolarMain  = document.getElementById('svg-solar-main');
+  var svgSolarSec   = document.getElementById('svg-solar-sec');
+  var svgReflected  = document.getElementById('svg-reflected');
+  var svgAbsorbed   = document.getElementById('svg-absorbed');
+  var svgGreenhouse = document.getElementById('svg-greenhouse');
+  var svgAtmos1     = document.getElementById('svg-atmos-1');
+  var svgAtmos2     = document.getElementById('svg-atmos-2');
+  var svgDangerRing = document.getElementById('svg-danger-ring');
+
+  // Data cells
+  var dcInsolation = document.getElementById('dc-insolation');
+  var dcAlbedo     = document.getElementById('dc-albedo');
+  var dcForcing    = document.getElementById('dc-forcing');
+  var dcEmissivity = document.getElementById('dc-emissivity');
+
+  // ── PHYSICS ───────────────────────────────────────────
+  function calcTemp(S, A, G) {
+    return Math.pow((S * (1 - A)) / (4 * SIGMA * (1 - G)), 0.25);
+  }
+
+  // ── MAIN UPDATE ───────────────────────────────────────
+  function updateAll() {
+    var S = parseFloat(sliderS.value);
+    var A = parseFloat(sliderA.value);
+    var G = parseFloat(sliderG.value);
+
+    // Slider value displays
+    valS.textContent = S.toFixed(0) + ' W/m²';
+    valA.textContent = A.toFixed(2);
+    valG.textContent = G.toFixed(2);
+
+    // Main temperature
+    var T = calcTemp(S, A, G);
+    var C = T - 273.15;
+    iterCount++;
+
+    readoutK.textContent = T.toFixed(1) + ' K';
+    readoutC.textContent = (C >= 0 ? '+' : '') + C.toFixed(1) + ' °C';
+    readoutIter.textContent = 'ITERATION: ' + pad3(iterCount);
+
+    // Color-code the K readout by regime
+    if (T > 300) {
+      readoutK.style.color = '#FF4400';
+      readoutK.style.textShadow = '0 0 20px rgba(255,68,0,0.6), 0 0 40px rgba(255,68,0,0.3)';
+    } else if (T > 293) {
+      readoutK.style.color = '#FFB000';
+      readoutK.style.textShadow = '0 0 20px rgba(255,176,0,0.55)';
+    } else if (T < 283) {
+      readoutK.style.color = '#44AAFF';
+      readoutK.style.textShadow = '0 0 20px rgba(68,170,255,0.5)';
+    } else {
+      readoutK.style.color = '#00FF41';
+      readoutK.style.textShadow = '0 0 20px rgba(0,255,65,0.5), 0 0 40px rgba(0,255,65,0.2)';
+    }
+
+    // 2050 anomaly: G increases linearly by 0.05 over 70 years
+    var G2050 = Math.min(G + 0.05, 0.98);
+    var T2050 = calcTemp(S, A, G2050);
+    var anomaly = T2050 - T;
+    anomalyEl.textContent = (anomaly >= 0 ? '+' : '') + anomaly.toFixed(1) + '°C ABOVE BASELINE';
+
+    // SVG arrow scaling
+    updateArrows(S, A, G);
+
+    // Scenario button active states
+    checkScenarioMatch(S, A, G);
+
+    // Divergence readouts
+    updateDivergence(T);
+
+    // Committee briefing
+    updateBriefing(T, S, A, G);
+
+    // Data cell updates
+    var T_noGH = calcTemp(S, A, 0);
+    dcInsolation.textContent = S.toFixed(0) + ' W/m²';
+    dcAlbedo.textContent     = A.toFixed(3);
+    dcForcing.textContent    = '+' + (T - T_noGH).toFixed(1) + ' K';
+    dcEmissivity.textContent = (1 - G).toFixed(3);
+  }
+
+  // ── ARROW VISUAL SCALING ──────────────────────────────
+  function updateArrows(S, A, G) {
+    // Solar (range 1200–1500)
+    var sNorm = (S - 1200) / 300;
+    svgSolarMain.setAttribute('stroke-width', (4 + sNorm * 9).toFixed(1));
+    svgSolarSec.setAttribute('stroke-width',  (2 + sNorm * 4).toFixed(1));
+    svgSolarMain.style.opacity = (0.45 + sNorm * 0.55).toFixed(2);
+
+    // Albedo (range 0.20–0.50) → reflected ↑, absorbed ↓
+    var aNorm = (A - 0.20) / 0.30;
+    svgReflected.setAttribute('stroke-width', (2 + aNorm * 9).toFixed(1));
+    svgAbsorbed.setAttribute('stroke-width',  (2 + (1 - aNorm) * 7).toFixed(1));
+
+    // Greenhouse (range 0.0–0.40) → trap arrow + atmos ring glow
+    var gNorm = G / 0.40;
+    svgGreenhouse.setAttribute('stroke-width', (2 + gNorm * 9).toFixed(1));
+    svgAtmos1.setAttribute('stroke-width', (14 + gNorm * 12).toFixed(0));
+    svgAtmos1.setAttribute('opacity',       (0.10 + gNorm * 0.38).toFixed(2));
+    svgAtmos2.setAttribute('opacity',       (0.18 + gNorm * 0.50).toFixed(2));
+
+    // Danger ring: fades in smoothly above G = 0.30
+    var dangerOpacity = G > 0.30 ? Math.min((G - 0.30) / 0.10, 1.0) : 0;
+    svgDangerRing.style.opacity = dangerOpacity.toFixed(2);
+  }
+
+  // ── SCENARIO MATCHING ─────────────────────────────────
+  function checkScenarioMatch(S, A, G) {
+    var mA = Math.abs(S - SCENARIO_A.S) < 0.5 &&
+             Math.abs(A - SCENARIO_A.A) < 0.005 &&
+             Math.abs(G - SCENARIO_A.G) < 0.005;
+    var mB = Math.abs(S - SCENARIO_B.S) < 0.5 &&
+             Math.abs(A - SCENARIO_B.A) < 0.005 &&
+             Math.abs(G - SCENARIO_B.G) < 0.005;
+    setActive(btnA, mA);
+    setActive(btnB, mB);
+  }
+
+  function setActive(btn, on) {
+    btn.classList.toggle('active', on);
+    var dot = btn.querySelector('.btn-indicator');
+    dot.style.background  = on ? '#00FF41' : '#2A1800';
+    dot.style.boxShadow   = on ? '0 0 8px #00FF41, 0 0 16px rgba(0,255,65,0.3)'
+                               : 'inset 0 0 3px rgba(0,0,0,0.5)';
+  }
+
+  // ── DIVERGENCE ────────────────────────────────────────
+  function updateDivergence(T) {
+    var TA = calcTemp(SCENARIO_A.S, SCENARIO_A.A, SCENARIO_A.G);
+    var TB = calcTemp(SCENARIO_B.S, SCENARIO_B.A, SCENARIO_B.G);
+
+    var diffAB   = TB - TA;
+    var diffCurr = T  - TA;
+
+    divABEl.textContent = sign(diffAB)   + Math.abs(diffAB).toFixed(1)   + ' K';
+    divCurrEl.textContent = sign(diffCurr) + Math.abs(diffCurr).toFixed(1) + ' K';
+
+    // Color current divergence
+    if (Math.abs(diffCurr) < 0.15) {
+      divCurrEl.style.color = '#00FF41';
+      divCurrEl.style.textShadow = '0 0 6px rgba(0,255,65,0.4)';
+    } else if (diffCurr > 0) {
+      divCurrEl.style.color = '#FF4400';
+      divCurrEl.style.textShadow = '0 0 6px rgba(255,68,0,0.4)';
+    } else {
+      divCurrEl.style.color = '#44AAFF';
+      divCurrEl.style.textShadow = '0 0 6px rgba(68,170,255,0.4)';
+    }
+  }
+
+  // ── BRIEFING TEXT ─────────────────────────────────────
+  function updateBriefing(T, S, A, G) {
+    var msg;
+    if (T < 283) {
+      msg = 'Model suggests significant cooling. Recommend review of albedo assumptions.';
+    } else if (T <= 293) {
+      msg = 'Model within historical range. Parameters consistent with observational record.';
+    } else if (T <= 300) {
+      msg = 'Model projects warming trend. Sensitivity to greenhouse parameter warrants attention.';
+    } else {
+      msg = 'WARNING: Model diverges significantly from instrumental baseline. High sensitivity regime.';
+    }
+    briefingEl.value = msg +
+      '\n\n[Record of proceedings — Room 2318, Rayburn House Office Building]' +
+      '\n[Parameters: S=' + S.toFixed(0) + ' W/m², A=' + A.toFixed(2) + ', G=' + G.toFixed(2) + ']';
+  }
+
+  // ── CRT FLICKER ───────────────────────────────────────
+  var readoutSection = document.getElementById('readout-section');
+  function flashCRT(callback) {
+    readoutSection.classList.remove('crt-recalculating');
+    void readoutSection.offsetWidth; // force reflow to restart animation
+    readoutSection.classList.add('crt-recalculating');
+    // Brief pause for dramatic effect, then update values
+    setTimeout(function () {
+      callback();
+      // Clean up class after animation completes
+      setTimeout(function () {
+        readoutSection.classList.remove('crt-recalculating');
+      }, 460);
+    }, 130);
+  }
+
+  // ── HELPERS ───────────────────────────────────────────
+  function pad3(n) {
+    return ('00' + n).slice(-3);
+  }
+  function sign(n) {
+    return n >= 0 ? '+' : '−';
+  }
+
+  // ── EVENT LISTENERS ───────────────────────────────────
+  sliderS.addEventListener('input', updateAll);
+  sliderA.addEventListener('input', updateAll);
+  sliderG.addEventListener('input', updateAll);
+
+  btnA.addEventListener('click', function () {
+    flashCRT(function () {
+      sliderS.value = SCENARIO_A.S;
+      sliderA.value = SCENARIO_A.A;
+      sliderG.value = SCENARIO_A.G;
+      updateAll();
+    });
+  });
+
+  btnB.addEventListener('click', function () {
+    flashCRT(function () {
+      sliderS.value = SCENARIO_B.S;
+      sliderA.value = SCENARIO_B.A;
+      sliderG.value = SCENARIO_B.G;
+      updateAll();
+    });
+  });
+
+  btnReset.addEventListener('click', function () {
+    sliderS.value = 1361;
+    sliderA.value = 0.30;
+    sliderG.value = 0.20;
+    iterCount = 0;
+    updateAll();
+  });
+
+  // ── INITIAL RENDER ────────────────────────────────────
+  updateAll();
+
+  // ── TYPEWRITER ────────────────────────────────────────
+  (function () {
+    var full = 'DR. SARAH CHEN \u2014 NATIONAL CENTER FOR ATMOSPHERIC RESEARCH \u2014 CONGRESSIONAL TESTIMONY, MARCH 14, 1979';
+    var el     = document.getElementById('typewriter-line');
+    var cursor = document.querySelector('.typewriter-cursor');
+    var i = 0;
+
+    function type() {
+      if (i < full.length) {
+        el.textContent += full.charAt(i);
+        i++;
+        // Slight jitter: em-dashes get a longer pause for drama
+        var delay = full.charAt(i - 1) === '\u2014' ? 220 : 38 + Math.random() * 28;
+        setTimeout(type, delay);
+      } else {
+        // Blink cursor for 2 s then hide it
+        setTimeout(function () {
+          if (cursor) { cursor.style.display = 'none'; }
+        }, 2000);
+      }
+    }
+
+    setTimeout(type, 900); // wait for page to settle
+  }());
+
+})();
+</script>
 
 </body>
 </html>
